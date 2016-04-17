@@ -18,9 +18,11 @@ const (
 	BASE    = uint32(len(SYMBOLS))
 
 	//DB parameters
-	DB_NAME    = "broadsheet"
-	DB_USER    = "iamkk"
-	DATASOURCE = "user=" + DB_USER + " dbname=" + DB_NAME + " sslmode=disable"
+	DB_USER = "ubuntu"
+	DB_HOST = "ec2-52-62-156-51.ap-southeast-2.compute.amazonaws.com"
+	DB_NAME = "postgres"
+	//DATASOURCE  = "user=" + DB_USER + " dbname=" + DB_NAME + " sslmode=disable"
+	DATASOURCE = "postgres://" + DB_USER + "@" + DB_HOST + "/" + DB_NAME + "?sslmode=disable"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +41,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if u := r.FormValue("url"); u != "" {
 			log.Println(u)
 			//s := encodeURL(u)
+			//TODO validate url u
 			s := postURL(u)
 			log.Println(s)
 
