@@ -64,7 +64,7 @@ func getURL(short string) (url string) {
 	err = db.QueryRow("SELECT url FROM shorturl WHERE surl = $1", short).Scan(&url)
 
 	if err == sql.ErrNoRows {
-		log.Fatal("No Results Found")
+		log.Println("No Results Found")
 	}
 
 	return string(url)
@@ -113,7 +113,7 @@ func handlerIcon(w http.ResponseWriter, r *http.Request) {}
 
 func checkErr(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		panic(err)
 	}
 }
