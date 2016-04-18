@@ -9,6 +9,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -21,6 +22,7 @@ const (
 	DB_USER = "ubuntu"
 	DB_HOST = "ec2-52-62-156-51.ap-southeast-2.compute.amazonaws.com"
 	DB_NAME = "postgres"
+	DB_PASS = ""
 	//DATASOURCE  = "user=" + DB_USER + " dbname=" + DB_NAME + " sslmode=disable"
 	DATASOURCE = "postgres://" + DB_USER + "@" + DB_HOST + "/" + DB_NAME + "?sslmode=disable"
 )
@@ -41,11 +43,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if u := r.FormValue("url"); u != "" {
 			log.Println(u)
 			//s := encodeURL(u)
-			//TODO validate url u
-			s := postURL(u)
-			log.Println(s)
 
-			fmt.Fprintf(w, "192.168.15.107:3008/"+s+"\n")
+			//validate url start with http
+			rHttp, _ := regexp.Compile("^(http|https)://")
+			if !rHttp.MatchString(u) {
+				//set the url start with http as default
+				u = "http://" + u
+			}
+
+			//validate the url
+			_, err := http.Get(u)
+			if err != nil {
+				log.Println("http.Get => %v", err.Error())
+				fmt.Fprintf(w, "invalid url "+u+"\n")
+			} else {
+				s := postURL(u)
+				log.Println(s)
+				fmt.Fprintf(w, "52.62.156.51:3008/"+s+"\n")
+			}
+
 		}
 
 		w.Header().Set("Content-Type", "text/html")
