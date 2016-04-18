@@ -1,10 +1,11 @@
 package main
 
 import (
+	"crypto/sha512"
 	"database/sql"
+	"encoding/binary"
 	"fmt"
 	_ "github.com/lib/pq"
-	"hash/crc32"
 	"log"
 	"math"
 	"net/http"
@@ -87,7 +88,12 @@ func getURL(short string) (url string) {
 }
 
 func postURL(url string) (short string) {
-	temp := crc32.ChecksumIEEE([]byte(url))
+	h := sha512.New()
+	h.Write([]byte(url))
+	bs := h.Sum(nil)
+
+	temp := binary.BigEndian.Uint32(bs)
+
 	short = Encode(temp)
 
 	//insert into postgres
