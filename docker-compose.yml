@@ -1,0 +1,10 @@
+url-shortener:
+  build: ./
+  ports : 
+    - 3008:3008
+  volumes:
+    - ./:/go/src/
+
+
+# db:
+#   image: postgres:latest
