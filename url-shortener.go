@@ -12,20 +12,18 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
 	// characters used for short-urls
 	SYMBOLS = "0123456789abcdefghijklmnopqrsuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
 	BASE    = uint32(len(SYMBOLS))
+)
 
-	//DB parameters
-	DB_USER = "ubuntu"
-	DB_HOST = "ec2-52-62-156-51.ap-southeast-2.compute.amazonaws.com"
-	DB_NAME = "postgres"
-	DB_PASS = ""
-	//DATASOURCE  = "user=" + DB_USER + " dbname=" + DB_NAME + " sslmode=disable"
-	DATASOURCE = "postgres://" + DB_USER + "@" + DB_HOST + "/" + DB_NAME + "?sslmode=disable"
+var (
+	db  *sql.DB
+	err error
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -76,8 +74,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func getURL(short string) (url string) {
 	log.Println(short)
-	db, err := sql.Open("postgres", DATASOURCE)
-	checkErr(err)
 	err = db.QueryRow("SELECT url FROM shorturl WHERE surl = $1", short).Scan(&url)
 
 	if err == sql.ErrNoRows {
@@ -97,8 +93,6 @@ func postURL(url string) (short string) {
 	short = Encode(temp)
 
 	//insert into postgres
-	db, err := sql.Open("postgres", DATASOURCE)
-	checkErr(err)
 	_, err = db.Exec(`INSERT INTO shorturl(surl, url)
 		SELECT $1,$2
 		WHERE NOT EXISTS
@@ -145,6 +139,39 @@ func main() {
 	if port == "" {
 		port = "3008"
 	}
+
+	connInfo := fmt.Sprintf(
+		"user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
+		"postgres",
+		"postgres",
+		os.Getenv("DB_ENV_POSTGRES_PASSWORD"),
+		os.Getenv("DB_PORT_5432_TCP_ADDR"),
+		os.Getenv("DB_PORT_5432_TCP_PORT"),
+	)
+
+	db, err = sql.Open("postgres", connInfo)
+	checkErr(err)
+
+	for i := 0; i < 5; i++ {
+		time.Sleep(time.Duration(i) * time.Second)
+
+		if err = db.Ping(); err == nil {
+			log.Println("try to connect db")
+			break
+		}
+		log.Println(err)
+	}
+
+	//initialise the DB table
+	_, err = db.Exec(
+		`create table if not exists shorturl
+		(
+		  surl character(10) NOT NULL,
+		  url text,
+		  CONSTRAINT unique_url PRIMARY KEY (surl)
+		)`)
+	checkErr(err)
+
 	http.HandleFunc("/favicon.ico", handlerIcon)
 	http.HandleFunc("/", handler)
 	log.Println("Server started: http://localhost:" + port)
