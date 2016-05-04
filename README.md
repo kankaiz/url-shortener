@@ -1,7 +1,7 @@
 # url-shortener
 The web app has been dockerised!
 
-after install docker and docker-compose properly
+after install [docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) properly
 
 simply run `docker-compose up`
 
