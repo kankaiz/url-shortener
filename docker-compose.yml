@@ -1,0 +1,16 @@
+url-shortener:
+  build: .
+  ports : 
+    - 3008:3008
+  command: go run url-shortener.go
+  links :
+    - db
+  volumes:
+    - .:/app
+
+db:
+  image: postgres:9.3
+  ports:
+    - "5432"
+  environment:
+    - POSTGRES_PASSWORD=postgrepass
