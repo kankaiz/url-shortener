@@ -58,7 +58,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				s := postURL(u)
 				log.Println(s)
-				fmt.Fprintf(w, "52.62.156.51:3008/"+s+"\n")
+				fmt.Fprintf(w, "brds.ht/"+s+"\n")
 			}
 
 		}
