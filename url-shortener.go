@@ -36,7 +36,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			log.Println(urlStr)
 			http.Redirect(w, r, urlStr, http.StatusFound)
 		} else {
-			fmt.Fprintf(w, "no url to shorten"+"\n")
+			fmt.Fprintf(w, "<h1>Input url below</h1>"+
+				"<form action=\"/save/\" method=\"POST\">"+
+				//"&nbsp<textarea name=\"url\"></textarea><br><br>"+
+				"&nbsp<input type=\"text\" name=\"url\"><br>"+
+				"&nbsp<input type=\"submit\" value=\"Save\">"+
+				"</form>")
 		}
 	case "POST":
 		if u := r.FormValue("url"); u != "" {
@@ -58,7 +63,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				s := postURL(u)
 				log.Println(s)
-				fmt.Fprintf(w, "brds.ht/"+s+"\n")
+				fmt.Fprintf(w, "<a href=\"http://%s\">%s</a>", "brds.ht/"+s, "brds.ht/"+s)
 			}
 
 		}
