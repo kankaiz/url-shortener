@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log"
 	"math"
 	"net/http"
@@ -13,10 +12,12 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
+// characters used for short-urls
 const (
-	// characters used for short-urls
 	SYMBOLS = "0123456789abcdefghijklmnopqrsuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
 	BASE    = uint32(len(SYMBOLS))
 )
@@ -49,16 +50,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			//s := encodeURL(u)
 
 			//validate url start with http
-			rHttp, _ := regexp.Compile("^(http|https)://")
-			if !rHttp.MatchString(u) {
+			rHTTP, _ := regexp.Compile("^(http|https)://")
+			if !rHTTP.MatchString(u) {
 				//set the url start with http as default
 				u = "http://" + u
 			}
 
 			//validate the url
-			_, err := http.Get(u)
-			if err != nil {
-				log.Println("http.Get => %v", err.Error())
+			_, validURLErr := http.Get(u)
+			if validURLErr != nil {
+				log.Println(err.Error())
 				fmt.Fprintf(w, "invalid url "+u+"\n")
 			} else {
 				s := postURL(u)
@@ -107,6 +108,7 @@ func postURL(url string) (short string) {
 	return short
 }
 
+// Encode ...
 func Encode(number uint32) string {
 	rest := number % BASE
 	result := string(SYMBOLS[rest])
@@ -117,11 +119,12 @@ func Encode(number uint32) string {
 	return result
 }
 
+// Decode ...
 func Decode(input string) uint32 {
 	const floatbase = float64(BASE)
 	l := len(input)
-	var sum int = 0
-	for index := l - 1; index > -1; index -= 1 {
+	var sum int
+	for index := l - 1; index > -1; index-- {
 		current := string(input[index])
 		pos := strings.Index(SYMBOLS, current)
 		sum = sum + (pos * int(math.Pow(floatbase, float64((l-index-1)))))
