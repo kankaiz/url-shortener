@@ -139,7 +139,7 @@ func (e ErrShortURLExist) Error() string {
 
 func checkCustomURL(url string, short string) error {
 	//validate short url non-special character
-	rShort, _ := regexp.Compile("^[a-zA-Z-]+$")
+	rShort, _ := regexp.Compile("^[a-zA-Z0-9-]+$")
 	if !rShort.MatchString(short) {
 		return ErrInvalidShortURL(short)
 	}
