@@ -89,13 +89,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ErrInvalideURL ...
-type ErrInvalideURL string
+// ErrInvalidShortURL ...
+type ErrInvalidShortURL string
 
 //override the error message
-func (e ErrInvalideURL) Error() string {
-	return fmt.Sprintf("the url %v is invalide",
-		string(e))
+func (e ErrInvalidShortURL) Error() string {
+	return fmt.Sprintf("the short url %v is invalid", string(e))
 }
 
 func getURL(short string) (url string) {
@@ -139,6 +138,11 @@ func (e ErrShortURLExist) Error() string {
 }
 
 func checkCustomURL(url string, short string) error {
+	//validate short url non-special character
+	rShort, _ := regexp.Compile("^[a-zA-Z-]+$")
+	if !rShort.MatchString(short) {
+		return ErrInvalidShortURL(short)
+	}
 	var urlRecord, surlRecord string
 	db.QueryRow("SELECT url FROM shorturl WHERE surl = $1", short).Scan(&urlRecord)
 	db.QueryRow("SELECT surl FROM shorturl WHERE url = $1", url).Scan(&surlRecord)
